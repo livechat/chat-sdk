@@ -1,0 +1,43 @@
+{
+  "name": "@livechat/chat-sdk",
+  "version": "0.1.0",
+  "description": "SDK for connecting LiveChat as agent",
+  "main": "dist/chat-sdk.js",
+  "module": "dist/chat-sdk.esm.js",
+  "cjs": "dist/chat-sdk.cjs.js",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "contributors": [
+    "Sambor Górnicz <s.gornicz@livechatinc.com>"
+  ],
+  "keywords": [
+    "livechat"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-transform-modules-commonjs": "^7.6.0",
+    "@babel/preset-env": "^7.6.3",
+    "babel-jest": "^24.9.0",
+    "jest": "^24.9.0",
+    "rollup": "^1.24.0",
+    "rollup-plugin-auto-external": "^2.0.0",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-dotenv": "^0.2.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-replace": "^2.2.0",
+    "rollup-plugin-uglify": "^6.0.3"
+  },
+  "dependencies": {
+    "@livechat/mitt": "^0.1.2",
+    "backo2": "^1.0.2",
+    "sockjs-client": "^1.4.0"
+  }
+}
