@@ -18,7 +18,8 @@ export function validateConfig(config) {
   }
 }
 
-export function getRtmUrl({ region, apiVersion }) {
+export function getRtmUrl({ region, apiVersion } = {}) {
+  // eslint-disable-next-line
   const versionRegex = new RegExp(/\/v([\d\.]*)\//);
 
   let url =
@@ -26,11 +27,12 @@ export function getRtmUrl({ region, apiVersion }) {
       ? process.env.EUROPE_CHAT_RTM_URL
       : process.env.CHAT_RTM_URL;
 
-  if (apiVersion)
+  if (apiVersion) {
     url = url.replace(versionRegex, () => {
       const shouldIncludeVersionTag = !apiVersion.includes("v");
       return `/${shouldIncludeVersionTag ? "v" : ""}${apiVersion}/`;
     });
+  }
 
   return url;
 }

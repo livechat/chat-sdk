@@ -131,7 +131,7 @@ class Socket {
   reconnect = delay => {
     if (!this.isOpen) throw new Error("Socket is not opened.");
     if (this._socket !== null) this.close();
-    if (delay === void 0) delay = this._backoff.duration();
+    if (delay === 0) delay = this._backoff.duration();
 
     clearTimeout(this._reconnectTimer);
     this._reconnectTimer = setTimeout(this._connect, delay);
