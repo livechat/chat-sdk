@@ -1,7 +1,7 @@
 import Socket from "./socket";
 import mitt from "@livechat/mitt";
 import { validateConfig } from "./utils";
-import * as ev from "./constants";
+import { LOGIN, SEND_EVENT } from "./constants";
 
 class SDK {
   constructor(config) {
@@ -20,7 +20,7 @@ class SDK {
   /**
    * Handle event queue (this._eventQueue)
    * Iterate over functions that was called before API was ready to handle them
-   * (Interval clear itself after successful login to RTM API and clearing eventQueue array)
+   * (Interval clear itself after successful login to RTM API and clearing all functions from eventQueue array)
    */
   _handleEventQueue = () => {
     this.queueInterval = setInterval(() => {
@@ -50,14 +50,14 @@ class SDK {
    * Handle RTM API push notifications for internal SDK usage
    */
   _eventListeners = () => {
-    this.on(ev.LOGIN, data => {
+    this.on(LOGIN, data => {
       if (data.success) {
         this.agentDetails = data.payload;
       }
     });
   };
 
-  // #### RTM METHODS ####
+  // #### PUBLIC METHODS ####
 
   /**
    * Initialize RTM API connection
@@ -103,10 +103,9 @@ class SDK {
     return this._promisify(resolve => resolve(this.agentDetails));
   };
 
-  // ##### SDK RTM METHODS #####
   sendTextMessage = (chat_id, message, recipients = "all") =>
     this.methodFactory({
-      action: ev.SEND_EVENT,
+      action: SEND_EVENT,
       payload: {
         chat_id,
         event: {

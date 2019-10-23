@@ -1,7 +1,16 @@
 import SockJS from "sockjs-client";
 import Backoff from "backo2";
 import { debounce, getRtmUrl } from "./utils";
-import * as ev from "./constants";
+import {
+  LOGIN,
+  DISCONNECT,
+  CONNECT,
+  OPEN,
+  CLOSE,
+  MESSAGE,
+  HEARTBEAT,
+  PING
+} from "./constants";
 
 class Socket {
   constructor(emitter, config) {
@@ -26,13 +35,14 @@ class Socket {
   login = ({ account_token }) => {
     if (!this.isLoggedIn) {
       this.send({
-        action: ev.LOGIN,
+        action: LOGIN,
         payload: { token: `Bearer ${account_token}` }
       });
 
-      this.emitter.on(ev.LOGIN, data => {
-        if (data.success) this.isLoggedIn = true;
-        else {
+      this.emitter.on(LOGIN, data => {
+        if (data.success) {
+          this.isLoggedIn = true;
+        } else {
           const error = JSON.stringify(data.payload) || "Invalid account_token";
           throw new Error(error);
         }
@@ -42,7 +52,7 @@ class Socket {
 
   // MAINTAIN SOCKET CONNECTION
   ping = () => {
-    this.send({ action: ev.PING });
+    this.send({ action: PING });
   };
 
   schedulePing = () =>
@@ -57,7 +67,7 @@ class Socket {
     this.isConnected = false;
     this.isLoggedIn = false;
     this._socket = null;
-    this.emitter.emit(ev.DISCONNECT);
+    this.emitter.emit(DISCONNECT);
     this.reconnect();
   };
 
@@ -66,7 +76,7 @@ class Socket {
     this._backoff.reset();
     this.schedulePing();
     this.login(this.config);
-    this.emitter.emit(ev.CONNECT);
+    this.emitter.emit(CONNECT);
   };
 
   _onMessage = payload => {
@@ -74,10 +84,12 @@ class Socket {
       const message = JSON.parse(payload.data);
 
       if (message && message.action) {
-        if (message.action === ev.PING) return;
+        if (message.action === PING) return;
         else this.emitter.emit(message.action, message);
 
-        if (this.config.debug) console.log("Receive: ", message);
+        if (this.config.debug) {
+          console.log("Receive: ", message);
+        }
       }
     } catch (e) {
       if (this.config.debug) console.warn(e);
@@ -90,17 +102,17 @@ class Socket {
   };
 
   _addEventListeners = instance => {
-    instance.addEventListener(ev.OPEN, this._onOpen);
-    instance.addEventListener(ev.CLOSE, this._onClose);
-    instance.addEventListener(ev.MESSAGE, this._onMessage);
-    instance.addEventListener(ev.HEARTBEAT, this._onHeartbeat);
+    instance.addEventListener(OPEN, this._onOpen);
+    instance.addEventListener(CLOSE, this._onClose);
+    instance.addEventListener(MESSAGE, this._onMessage);
+    instance.addEventListener(HEARTBEAT, this._onHeartbeat);
   };
 
   _removeEventListeners = instance => {
-    instance.removeEventListener(ev.OPEN, this._onOpen);
-    instance.removeEventListener(ev.CLOSE, this._onClose);
-    instance.removeEventListener(ev.MESSAGE, this._onMessage);
-    instance.removeEventListener(ev.HEARTBEAT, this._heartbeatListener);
+    instance.removeEventListener(OPEN, this._onOpen);
+    instance.removeEventListener(CLOSE, this._onClose);
+    instance.removeEventListener(MESSAGE, this._onMessage);
+    instance.removeEventListener(HEARTBEAT, this._heartbeatListener);
   };
 
   // INITIALIZATION
@@ -122,7 +134,7 @@ class Socket {
   // WebSocket METHODS
   send = payload => {
     if (!this.isConnected) throw new Error("Socket is not connected");
-    if (payload.action !== ev.PING && this.config.debug) {
+    if (payload.action !== PING && this.config.debug) {
       console.log("Send: ", payload);
     }
     this._socket.send(JSON.stringify(payload));
