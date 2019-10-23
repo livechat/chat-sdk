@@ -103,7 +103,7 @@ class SDK {
     return this._promisify(resolve => resolve(this.agentDetails));
   };
 
-  sendTextMessage = (chat_id, message, recipients = "all") =>
+  sendMessage = (chat_id, message, recipients = "all") =>
     this.methodFactory({
       action: SEND_EVENT,
       payload: {
