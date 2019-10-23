@@ -1,6 +1,6 @@
 import { getRtmUrl, validateConfig } from "../src/utils";
 
-describe("Test utlis", () => {
+describe("Utils", () => {
   test("validateConfig", () => {
     const validConfig = { account_token: "token" };
     const invalidConfig = { region: "europe" };
