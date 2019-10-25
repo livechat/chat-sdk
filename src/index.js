@@ -82,11 +82,9 @@ class SDK {
    */
   methodFactory = (requestBody, pushListener) =>
     this._promisify((resolve, reject) => {
-      if (requestBody || (requestBody && !requestBody.action)) {
+      if (!requestBody || (requestBody && !requestBody.action)) {
         reject("ChatSDK.methodFactory: Incorrect requestBody parameter");
       }
-
-      this._RTM.send(requestBody);
 
       const eventListener = pushListener || (requestBody && requestBody.action);
 
@@ -94,6 +92,8 @@ class SDK {
         if (data.success) resolve((data && data.payload) || {});
         else reject(data.error);
       });
+
+      this._RTM.send(requestBody);
     });
 
   /**
@@ -103,8 +103,10 @@ class SDK {
     return this._promisify(resolve => resolve(this.agentDetails));
   };
 
-  sendMessage = (chat_id, message, recipients = "all") =>
-    this.methodFactory({
+  sendMessage = (chat_id, message = "", recipients = "all") => {
+    if (!chat_id) throw new Error("ChatSDK.sendMessage: Missing chat_id param");
+
+    return this.methodFactory({
       action: SEND_EVENT,
       payload: {
         chat_id,
@@ -115,6 +117,7 @@ class SDK {
         }
       }
     });
+  };
 
   // ##### EMITTER METHODS #####
   on = (...args) => this.emitter.on(...args);
