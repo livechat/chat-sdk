@@ -13,7 +13,7 @@ import {
 } from "./constants";
 
 class Socket {
-  constructor(emitter, config) {
+  constructor(emitter, config, socket = SockJS) {
     this.config = config;
     this.emitter = emitter;
 
@@ -25,6 +25,7 @@ class Socket {
 
     this._socket_url = getRtmUrl(this.config);
 
+    this._socketClient = socket;
     this._socket = null;
     this._reconnectTimer = null;
     this.isOpen = false;
@@ -32,7 +33,7 @@ class Socket {
     this.isLoggedIn = false;
   }
 
-  login = ({ account_token }) => {
+  _login = ({ account_token }) => {
     if (!this.isLoggedIn) {
       this.send({
         action: LOGIN,
@@ -51,15 +52,15 @@ class Socket {
   };
 
   // MAINTAIN SOCKET CONNECTION
-  ping = () => {
+  _ping = () => {
     this.send({ action: PING });
   };
 
-  schedulePing = () =>
+  _schedulePing = () =>
     debounce(() => {
       if (!this.isOpen) return;
-      if (this.isConnected) this.ping();
-      this.schedulePing();
+      if (this.isConnected) this._ping();
+      this._schedulePing();
     }, 15 * 1000);
 
   // WebSocket EVENT HANDLERS
@@ -68,14 +69,14 @@ class Socket {
     this.isLoggedIn = false;
     this._socket = null;
     this.emitter.emit(DISCONNECT);
-    this.reconnect();
+    this._reconnect();
   };
 
   _onOpen = () => {
     this.isConnected = true;
     this._backoff.reset();
-    this.schedulePing();
-    this.login(this.config);
+    this._schedulePing();
+    this._login(this.config);
     this.emitter.emit(CONNECT);
   };
 
@@ -97,8 +98,8 @@ class Socket {
   };
 
   _onHeartbeat = () => {
-    this.ping();
-    this.schedulePing();
+    this._ping();
+    this._schedulePing();
   };
 
   _addEventListeners = instance => {
@@ -115,32 +116,14 @@ class Socket {
     instance.removeEventListener(HEARTBEAT, this._heartbeatListener);
   };
 
-  // INITIALIZATION
+  // WEBSOCKET LIFECYCLE METHODS
   _connect = () => {
     this.isOpen = true;
-
-    this._socket = new SockJS(this._socket_url, undefined, {
-      transports: ["websocket", "xhr-polling"]
-    });
-
+    this._socket = new this._socketClient(this._socket_url);
     this._addEventListeners(this._socket);
   };
 
-  init = () => {
-    if (this.isOpen) throw new Error("Socket is already open");
-    this._connect();
-  };
-
-  // WebSocket METHODS
-  send = payload => {
-    if (!this.isConnected) throw new Error("Socket is not connected");
-    if (payload.action !== PING && this.config.debug) {
-      console.log("Send: ", payload);
-    }
-    this._socket.send(JSON.stringify(payload));
-  };
-
-  reconnect = delay => {
+  _reconnect = delay => {
     if (!this.isOpen) throw new Error("Socket is not opened.");
     if (this._socket !== null) this.close();
     if (delay === 0) delay = this._backoff.duration();
@@ -149,23 +132,39 @@ class Socket {
     this._reconnectTimer = setTimeout(this._connect, delay);
   };
 
-  close() {
+  _close() {
     this._removeEventListeners(this._socket);
     this.isConnected = false;
     this._socket.close();
     this._socket = null;
   }
 
-  disconnect = () => {
+  _disconnect = () => {
     this.isOpen = false;
     clearTimeout(this._reconnectTimer);
-    if (this._socket === null) return;
-    this.close();
+
+    if (this._socket !== null) {
+      this._close();
+    }
+  };
+
+  // PUBLIC METHODS
+  init = () => {
+    if (this.isOpen) throw new Error("Socket is already open");
+    this._connect();
+  };
+
+  send = payload => {
+    if (!this.isConnected) throw new Error("Socket is not connected");
+    if (payload.action !== PING && this.config.debug) {
+      console.log("Send: ", payload);
+    }
+    this._socket.send(JSON.stringify(payload));
   };
 
   destroy = () => {
     this.emitter.off();
-    this.disconnect();
+    this._disconnect();
   };
 }
 
