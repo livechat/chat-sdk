@@ -9,12 +9,17 @@ import {
   CLOSE,
   MESSAGE,
   HEARTBEAT,
-  PING
+  PING,
+  INVALID_TOKEN,
+  SOCKET_NOT_OPENED,
+  SOCKET_ALREADY_OPEN,
+  SOCKET_NOT_CONNECTED
 } from "./constants";
 
 class Socket {
-  constructor(emitter, config, socket = SockJS) {
+  constructor(emitter, config = {}, socket = SockJS) {
     this.config = config;
+    this.authConfig = null;
     this.emitter = emitter;
 
     this._backoff = new Backoff({
@@ -33,18 +38,18 @@ class Socket {
     this.isLoggedIn = false;
   }
 
-  _login = ({ account_token }) => {
-    if (!this.isLoggedIn) {
+  _login = () => {
+    if (!this.isLoggedIn && this.authConfig) {
       this.send({
         action: LOGIN,
-        payload: { token: `Bearer ${account_token}` }
+        payload: { token: `Bearer ${this.authConfig.access_token}` }
       });
 
       this.emitter.on(LOGIN, data => {
         if (data.success) {
           this.isLoggedIn = true;
         } else {
-          const error = JSON.stringify(data.payload) || "Invalid account_token";
+          const error = JSON.stringify(data.payload) || INVALID_TOKEN;
           throw new Error(error);
         }
       });
@@ -76,7 +81,7 @@ class Socket {
     this.isConnected = true;
     this._backoff.reset();
     this._schedulePing();
-    this._login(this.config);
+    this._login();
     this.emitter.emit(CONNECT);
   };
 
@@ -124,15 +129,15 @@ class Socket {
   };
 
   _reconnect = delay => {
-    if (!this.isOpen) throw new Error("Socket is not opened.");
-    if (this._socket !== null) this.close();
+    if (!this.isOpen) throw new Error(SOCKET_NOT_OPENED);
+    if (this._socket !== null) this._closeSocketConnection();
     if (delay === 0) delay = this._backoff.duration();
 
     clearTimeout(this._reconnectTimer);
     this._reconnectTimer = setTimeout(this._connect, delay);
   };
 
-  _close() {
+  _closeSocketConnection() {
     this._removeEventListeners(this._socket);
     this.isConnected = false;
     this._socket.close();
@@ -144,24 +149,37 @@ class Socket {
     clearTimeout(this._reconnectTimer);
 
     if (this._socket !== null) {
-      this._close();
+      this._closeSocketConnection();
     }
   };
 
   // PUBLIC METHODS
-  init = () => {
-    if (this.isOpen) throw new Error("Socket is already open");
-    this._connect();
+  /**
+   * Initialize WebSocket connection and log in Agent
+   */
+  init = authConfig => {
+    if (this.isOpen) {
+      console.warn(SOCKET_ALREADY_OPEN);
+    } else {
+      this.authConfig = authConfig;
+      this._connect();
+    }
   };
 
+  /**
+   * Send event to RTM API
+   */
   send = payload => {
-    if (!this.isConnected) throw new Error("Socket is not connected");
+    if (!this.isConnected) throw new Error(SOCKET_NOT_CONNECTED);
     if (payload.action !== PING && this.config.debug) {
       console.log("Send: ", payload);
     }
     this._socket.send(JSON.stringify(payload));
   };
 
+  /**
+   * Disconnect RTM API connection
+   */
   destroy = () => {
     this.emitter.off();
     this._disconnect();

@@ -1,12 +1,15 @@
 import Socket from "./socket";
 import mitt from "@livechat/mitt";
 import { validateConfig } from "./utils";
-import { LOGIN, SEND_EVENT } from "./constants";
+import {
+  LOGIN,
+  SEND_EVENT,
+  ERROR_METHOD_FACTORY_INCORRECT_PARAMS,
+  ERROR_SEND_MESSAGE_MISSING_CHAT_ID
+} from "./constants";
 
 class SDK {
   constructor(config) {
-    validateConfig(config);
-
     this.emitter = mitt();
     this._RTM = new Socket(this.emitter, config);
 
@@ -61,11 +64,14 @@ class SDK {
 
   /**
    * Initialize RTM API connection
+   * @param {object} config - puthorization config, should contain at least access_token param with value, will be used to log in Agent
    */
-  init = () => {
+  init = config => {
+    validateConfig(config);
+
     this._handleEventQueue();
     this._eventListeners();
-    this._RTM.init();
+    this._RTM.init(config);
   };
 
   /**
@@ -83,7 +89,7 @@ class SDK {
   methodFactory = (requestBody, pushListener) =>
     this._promisify((resolve, reject) => {
       if (!requestBody || (requestBody && !requestBody.action)) {
-        reject("ChatSDK.methodFactory: Incorrect requestBody parameter");
+        reject(ERROR_METHOD_FACTORY_INCORRECT_PARAMS);
       }
 
       const eventListener = pushListener || (requestBody && requestBody.action);
@@ -103,8 +109,11 @@ class SDK {
     return this._promisify(resolve => resolve(this.agentDetails));
   };
 
+  /**
+   * Send event with plain text message
+   */
   sendMessage = (chat_id, message = "", recipients = "all") => {
-    if (!chat_id) throw new Error("ChatSDK.sendMessage: Missing chat_id param");
+    if (!chat_id) throw new Error(ERROR_SEND_MESSAGE_MISSING_CHAT_ID);
 
     return this.methodFactory({
       action: SEND_EVENT,
