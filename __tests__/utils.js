@@ -1,21 +1,26 @@
 import { getRtmUrl, validateConfig } from "../src/utils";
+import {
+  ERROR_INIT_MISSING_CONFIG,
+  ERROR_INIT_MISSING_TOKEN
+} from "../src/constants";
 
 describe("Utils", () => {
   test("validateConfig", () => {
-    const validConfig = { account_token: "token" };
+    const validConfig = { access_token: "token" };
     const invalidConfig = { region: "europe" };
 
     // Valid case
     expect(validateConfig(validConfig)).toBe(true);
 
     // Invalid cases
-    expect(validateConfig).toThrow(new Error("ChatSDK: Missing config"));
-    expect(() => validateConfig(invalidConfig)).toThrow(
-      new Error("ChatSDK: Incorrect config, missing 'account_token' value")
+    expect(validateConfig).toThrowError(ERROR_INIT_MISSING_CONFIG);
+    expect(() => validateConfig(invalidConfig)).toThrowError(
+      ERROR_INIT_MISSING_TOKEN
     );
   });
 
   test("getRtmUrl", () => {
+    // eslint-disable-next-line
     const versionRegex = new RegExp(/\/v([\d\.]*)\//);
     const newApiVersion = "1.1";
 

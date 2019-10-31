@@ -1,30 +1,36 @@
 import SDK from "../src/";
+import {
+  ERROR_INIT_MISSING_CONFIG,
+  ERROR_INIT_MISSING_TOKEN,
+  ERROR_METHOD_FACTORY_INCORRECT_PARAMS,
+  ERROR_SEND_MESSAGE_MISSING_CHAT_ID
+} from "../src/constants";
 
+let chatSDK;
 const mockedRequestBody = { action: "test" };
-const config = { account_token: "some_token" };
+const config = { access_token: "some_token" };
 
 describe("SDK client", () => {
-  test("Create new SDK instance without config", () => {
-    expect(() => new SDK()).toThrowError("ChatSDK: Missing config");
-  });
-
-  test("Create new SDK instance with incorrect config", () => {
-    expect(() => new SDK({})).toThrowError(
-      "ChatSDK: Incorrect config, missing 'account_token' value"
-    );
-  });
+  beforeEach(() => (chatSDK = new SDK()));
 
   test("Create new SDK instance", () => {
-    expect(() => new SDK(config)).not.toThrow();
+    expect(() => new SDK()).not.toThrow();
   });
 
-  test("SDK init", () => {
-    const chatSDK = new SDK(config);
+  test("Initialize SDK instance without config", () => {
+    expect(() => chatSDK.init()).toThrowError(ERROR_INIT_MISSING_CONFIG);
+  });
+
+  test("Initialize SDK instance with incorrect config", () => {
+    expect(() => chatSDK.init({})).toThrowError(ERROR_INIT_MISSING_TOKEN);
+  });
+
+  test("Initialize SDK init", () => {
     const spyEventQueue = jest.spyOn(chatSDK, "_handleEventQueue");
     const spyEventListeners = jest.spyOn(chatSDK, "_eventListeners");
     const spyRTMinit = jest.spyOn(chatSDK._RTM, "init");
 
-    chatSDK.init();
+    chatSDK.init(config);
 
     expect(spyEventQueue).toHaveBeenCalled();
     expect(spyEventListeners).toHaveBeenCalled();
@@ -32,7 +38,6 @@ describe("SDK client", () => {
   });
 
   test("SDK destroy", () => {
-    const chatSDK = new SDK(config);
     const spyRTMdestroy = jest.spyOn(chatSDK._RTM, "destroy");
 
     chatSDK.destroy();
@@ -41,23 +46,19 @@ describe("SDK client", () => {
   });
 
   test("SDK methodFactory - without request body", () => {
-    const chatSDK = new SDK(config);
-    chatSDK.init();
+    chatSDK.init(config);
 
     const customMethod = () => chatSDK.methodFactory();
 
     return customMethod().catch(err => {
-      expect(err).toMatch(
-        "ChatSDK.methodFactory: Incorrect requestBody parameter"
-      );
+      expect(err).toMatch(ERROR_METHOD_FACTORY_INCORRECT_PARAMS);
     });
   });
 
   test("SDK methodFactory", () => {
-    const chatSDK = new SDK(config);
     const spyRTMdsend = jest.spyOn(chatSDK._RTM, "send");
 
-    chatSDK.init();
+    chatSDK.init(config);
 
     const customMethod = () => chatSDK.methodFactory(mockedRequestBody);
 
@@ -68,8 +69,7 @@ describe("SDK client", () => {
   });
 
   test("SDK getAgentDetails", () => {
-    const chatSDK = new SDK(config);
-    chatSDK.init();
+    chatSDK.init(config);
 
     return chatSDK.getAgentDetails().then(data => {
       expect(data).toEqual({});
@@ -77,8 +77,7 @@ describe("SDK client", () => {
   });
 
   test("SDK sendMessage", () => {
-    const chatSDK = new SDK(config);
-    chatSDK.init();
+    chatSDK.init(config);
 
     const responseBody = {
       action: "send_event",
@@ -94,16 +93,14 @@ describe("SDK client", () => {
   });
 
   test("SDK sendMessage - without chat_id param", () => {
-    const chatSDK = new SDK(config);
-    chatSDK.init();
+    chatSDK.init(config);
 
     expect(() => chatSDK.sendMessage()).toThrowError(
-      "ChatSDK.sendMessage: Missing chat_id param"
+      ERROR_SEND_MESSAGE_MISSING_CHAT_ID
     );
   });
 
   test("SDK emitter - on", () => {
-    const chatSDK = new SDK(config);
     const spyEmitterOn = jest.spyOn(chatSDK.emitter, "on");
 
     chatSDK.on("test", () => {});
@@ -111,7 +108,6 @@ describe("SDK client", () => {
   });
 
   test("SDK emitter - once", () => {
-    const chatSDK = new SDK(config);
     const spyEmitterOnce = jest.spyOn(chatSDK.emitter, "once");
 
     chatSDK.once("test", () => {});
@@ -119,7 +115,6 @@ describe("SDK client", () => {
   });
 
   test("SDK emitter - off", () => {
-    const chatSDK = new SDK(config);
     const spyEmitterOff = jest.spyOn(chatSDK.emitter, "off");
 
     chatSDK.off("test", () => {});

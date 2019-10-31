@@ -1,3 +1,8 @@
+import {
+  ERROR_INIT_MISSING_CONFIG,
+  ERROR_INIT_MISSING_TOKEN
+} from "./constants";
+
 export function debounce(func, timeout) {
   let timer;
   return (...args) => {
@@ -10,9 +15,9 @@ export function debounce(func, timeout) {
 
 export function validateConfig(config) {
   if (!config) {
-    throw new Error("ChatSDK: Missing config");
-  } else if (!config.account_token) {
-    throw new Error("ChatSDK: Incorrect config, missing 'account_token' value");
+    throw new Error(ERROR_INIT_MISSING_CONFIG);
+  } else if (!config.access_token) {
+    throw new Error(ERROR_INIT_MISSING_TOKEN);
   } else {
     return true;
   }

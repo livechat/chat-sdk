@@ -1,5 +1,6 @@
 import Socket from "../src/socket";
 import mitt from "@livechat/mitt";
+import { SOCKET_NOT_CONNECTED } from "../src/constants";
 
 let ws, emitter;
 const mockedRequestBody = { action: "test" };
@@ -13,7 +14,7 @@ describe("Socket client", () => {
   });
 
   test("send method before init", () => {
-    expect(() => ws.send(mockedRequestBody)).toThrowError("Socket is not connected");
+    expect(() => ws.send(mockedRequestBody)).toThrowError(SOCKET_NOT_CONNECTED);
   });
 
   test("init", () => {
@@ -50,7 +51,7 @@ describe("Socket client", () => {
 
   test("destroy", () => {
     const spyDisconnect = jest.spyOn(ws, "_disconnect");
-    const spyClose = jest.spyOn(ws, "_close");
+    const spyClose = jest.spyOn(ws, "_closeSocketConnection");
     const spyRemoveListeners = jest.spyOn(ws, "_removeEventListeners");
 
     ws.destroy();
@@ -64,6 +65,6 @@ describe("Socket client", () => {
   });
 
   test("send method after destroy", () => {
-    expect(() => ws.send(mockedRequestBody)).toThrowError("Socket is not connected");
+    expect(() => ws.send(mockedRequestBody)).toThrowError(SOCKET_NOT_CONNECTED);
   });
 });
