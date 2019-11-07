@@ -14,7 +14,7 @@ class SDK {
     this._RTM = new Socket(this.emitter, config);
 
     this._eventQueue = [];
-    this.agentDetails = {};
+    this._agentDetails = {};
   }
 
   _checkRtmConnection = () => this._RTM.isConnected;
@@ -55,7 +55,7 @@ class SDK {
   _eventListeners = () => {
     this.on(LOGIN, data => {
       if (data.success) {
-        this.agentDetails = data.payload;
+        this._agentDetails = data.payload;
       }
     });
   };
@@ -106,7 +106,7 @@ class SDK {
    * Gets currently logged agent info
    */
   getAgentDetails = () => {
-    return this._promisify(resolve => resolve(this.agentDetails));
+    return this._promisify(resolve => resolve(this._agentDetails));
   };
 
   /**

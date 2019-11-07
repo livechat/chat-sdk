@@ -92,7 +92,7 @@ This SDK supports the RTM transport. For that reason, make sure you use the [Age
 ​
 In the example below, we're creating a custom method that returns chat thread summaries. As you can see in the [documentation](https://developers.labs.livechatinc.com/docs/feature/chat-sdk/messaging/agent-chat-api/rtm-reference/#get-chat-threads-summary), only `chat_id` is required, but you can include other optional parameters in your custom method.
 ​
-```
+```js
 const getChatThreadsSummary = (chatId) => chatSDK.methodFactory({
     action: "get_chat_threads_summary",
     payload: { "chat_id": chatId }

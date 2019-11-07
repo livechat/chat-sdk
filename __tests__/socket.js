@@ -30,7 +30,6 @@ describe("Socket client", () => {
     expect(spyListeners).toHaveBeenCalled();
   });
 
-  // TODO: Fix test, expects are ignored
   test("send method", () => {
     const spySend = jest.spyOn(ws, "send");
 

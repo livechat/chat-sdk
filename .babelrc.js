@@ -1,11 +1,16 @@
-const { NODE_ENV, BABEL_ENV } = process.env;
-const cjs = BABEL_ENV === "cjs" || NODE_ENV === "test";
+module.exports = function (api) {
+  api.cache(true);
 
-const presets = [["@babel/preset-env", { loose: true, modules: false }]];
+  const { NODE_ENV, BABEL_ENV } = process.env;
+  const isCJS = BABEL_ENV === "cjs" || NODE_ENV === "test";
 
-const plugins = [
-  ["@babel/plugin-proposal-class-properties", { loose: true }],
-  cjs && "@babel/plugin-transform-modules-commonjs"
-].filter(Boolean);
+  const presets = [ ["@babel/preset-env", { loose: true, modules: false }] ];
+  const plugins = [ ["@babel/plugin-proposal-class-properties", { loose: true }] ];
 
-module.exports = { presets, plugins };
+  if (isCJS) plugins.push("@babel/plugin-transform-modules-commonjs")
+
+  return {
+    presets,
+    plugins
+  };
+}
