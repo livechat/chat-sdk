@@ -19,7 +19,9 @@
     "build": "rollup -c",
     "test": "jest",
     "prettier": "prettier --write src/**/*.js",
-    "eslint": "eslint src/**/*.js"
+    "eslint": "eslint src/**/*.js",
+    "install-example": "npm install --prefix example",
+    "start-example": "npm run start --prefix example"
   },
   "husky": {
     "hooks": {
