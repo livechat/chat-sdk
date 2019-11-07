@@ -14,7 +14,7 @@ export const PING = "ping";
 // ERRORS:
 export const INVALID_TOKEN = "ChatSDK: Invalid token";
 export const SOCKET_NOT_OPENED = "ChatSDK: Socket is not opened.";
-export const SOCKET_ALREADY_OPEN = "ChatSDK: Socket is not opened.";
+export const SOCKET_ALREADY_OPEN = "ChatSDK: Socket is already open.";
 export const SOCKET_NOT_CONNECTED = "ChatSDK: Socket is not connected.";
 export const ERROR_INIT_MISSING_CONFIG = "ChatSDK.init: Missing config";
 export const ERROR_INIT_MISSING_TOKEN =
