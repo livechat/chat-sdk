@@ -5,7 +5,7 @@ import styled from "styled-components";
 import ChatForm from "./Form";
 import Message from "../Events/Message";
 import SystemMessage from "../Events/SystemMessage";
-import FiledForm from "../Events/FiledForm";
+import FilledForm from "../Events/FilledForm";
 import ChatInstruction from "./ChatInstruction";
 
 // STYLED COMPONENTS:
@@ -53,7 +53,7 @@ const ChatMessages = ({ chatInfo, chatMessages, onlyMessages = false }) => {
                 return <SystemMessage key={message.id} message={message} />;
 
               case "filled_form":
-                return <FiledForm key={message.id} message={message} />;
+                return <FilledForm key={message.id} message={message} />;
 
               default:
                 return null;

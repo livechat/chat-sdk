@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "@livechat/design-system";
 
-const FiledForm = ({ message }) => (
+const FilledForm = ({ message }) => (
   <Card title="Prechat Survey">
     {message.fields.map(({ id, label, answer }) => (
       <p key={id}>
@@ -11,4 +11,4 @@ const FiledForm = ({ message }) => (
   </Card>
 );
 
-export default FiledForm;
+export default FilledForm;
