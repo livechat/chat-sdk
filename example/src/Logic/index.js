@@ -8,7 +8,7 @@ export const ChatSDK = new SDK({
 // Custom methods created with `ChatSDK.methodFactory`:
 
 /**
- * Returns list of archived chats
+ * Returns list of last 10 archived chats
  * Based on: https://developers.livechatinc.com/docs/messaging/agent-chat-api/rtm-reference/#get-archives
  */
 export const getArchives = () =>

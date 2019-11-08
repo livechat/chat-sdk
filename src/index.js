@@ -64,7 +64,7 @@ class SDK {
 
   /**
    * Initialize RTM API connection
-   * @param {object} config - puthorization config, should contain at least access_token param with value, will be used to log in Agent
+   * @param {object} config - authorization config, should contain at least access_token param, config will be used to log in Agent
    */
   init = config => {
     validateConfig(config);
