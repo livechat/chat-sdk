@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { Button } from "@livechat/design-system";
+import Loader from "../Components/Loader";
 import { ChatSDK } from "../Logic";
 import { useAuth } from "../Logic/authorization";
-import Loader from "../Components/Loader";
-import { Button } from "@livechat/design-system";
 
 const Wrapper = styled.div`
   padding: 2rem;
@@ -32,13 +32,18 @@ const Text = styled.p`
 
 const AgentDetails = () => {
   const { instance } = useAuth();
-
   const [agentDetails, setAgentDetails] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     ChatSDK.getAgentDetails().then(details => {
-      setAgentDetails(details);
+      if (isMounted) {
+        setAgentDetails(details);
+      }
     });
+
+    return () => isMounted = false;
   }, [setAgentDetails]);
 
   const signOut = () => {

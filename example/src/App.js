@@ -10,6 +10,7 @@ import ActiveChats from "./Container/ActiveChats";
 import AgentDetails from "./Container/AgentDetails";
 import Archives from "./Container/Archives";
 import Navigation from "./Components/Navigation";
+import Loader from "./Components/Loader";
 
 // STYLED COMPONENTS:
 const AppWrapper = styled.div`
@@ -38,7 +39,7 @@ const theme = {
   bgWhite: "#FFFFFF",
   bgGray: "#F0F4F7",
   primary: "#4083F3",
-  secondary: "#DDE2E6",
+  secondary: "#DDE2E6"
 };
 
 const navigationItems = [
@@ -50,6 +51,7 @@ const navigationItems = [
 const App = () => {
   const { isLoggedIn, agentData } = useAuth();
   const [activeTab, setActiveTab] = useState(navigationItems[0]);
+  const [isReadyToRender, setIsReadyToRender] = useState(false);
 
   const selectActiveTab = tabId => {
     const pickedTab = navigationItems.find(({ id }) => id === tabId);
@@ -63,6 +65,19 @@ const App = () => {
     }
   }, [agentData, isLoggedIn]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    // Wait with render until app will get all necessary info from API
+    ChatSDK.on("login", () => {
+      if (isMounted) {
+        setIsReadyToRender(true);
+      }
+    });
+
+    return () => (isMounted = false);
+  }, []);
+
   const ActiveComponent = activeTab && activeTab.component;
 
   return (
@@ -75,7 +90,7 @@ const App = () => {
             activeTab={activeTab}
           />
 
-          {activeTab && <ActiveComponent />}
+          {isReadyToRender ? <ActiveComponent /> : <Loader />}
         </Wrapper>
       </AppWrapper>
     </ThemeProvider>

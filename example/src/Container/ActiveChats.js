@@ -38,8 +38,10 @@ const ActiveChats = () => {
   const { messages } = useChatMessages(activeChatId);
 
   useEffect(() => {
+    let isMounted = true;
+
     ChatSDK.getAgentDetails().then(data => {
-      if (data && data.chats_summary) {
+      if (isMounted && data && data.chats_summary) {
         const agentsActiveChats = data.chats_summary;
         if (agentsActiveChats.length) {
           pickChat(agentsActiveChats[0]);
@@ -47,6 +49,8 @@ const ActiveChats = () => {
         }
       }
     });
+
+    return () => isMounted = false;
   }, [setChatList]);
 
   return (

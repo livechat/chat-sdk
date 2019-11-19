@@ -24,22 +24,32 @@ const ArchivedChats = () => {
   const [chatMessages, setChatMessages] = useState([]);
 
   useEffect(() => {
+    let isMounted = true;
+
     getArchives().then(({ chats }) => {
-      if (chats.length) pickChat(chats[0]);
-      setChatList(chats);
+      if (isMounted) {
+        if (chats.length) pickChat(chats[0]);
+        setChatList(chats);
+      }
     });
 
     const handleThreads = ({ payload }) => {
-      setChatInfo(payload.chat);
+      if (isMounted) {
+        setChatInfo(payload.chat);
 
-      if (payload.chat.threads.length) {
-        const msgs = payload.chat.threads[0].events;
-        setChatMessages(msgs);
+        if (payload.chat.threads.length) {
+          const msgs = payload.chat.threads[0].events;
+          setChatMessages(msgs);
+        }
       }
     };
 
     ChatSDK.on("get_chat_threads", handleThreads);
-    return () => ChatSDK.off("get_chat_threads", handleThreads);
+
+    return () => {
+      ChatSDK.off("get_chat_threads", handleThreads);
+      isMounted = false;
+    };
   }, []);
 
   const pickChat = chatItem => {
