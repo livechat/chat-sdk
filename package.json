@@ -67,7 +67,8 @@
   },
   "dependencies": {
     "@livechat/mitt": "^0.1.2",
-    "backo2": "^1.0.2",
-    "sockjs-client": "^1.4.0"
+    "@livechat/platform-client": "^0.2.0",
+    "promise-controller": "^0.6.0",
+    "shortid": "^2.2.15"
   }
 }

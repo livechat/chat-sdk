@@ -1,21 +1,23 @@
-// RTM API
+// RTM API EVENTS:
 export const LOGIN = "login";
 export const SEND_EVENT = "send_event";
 
 // WEBSOCKET:
 export const CONNECT = "connect";
 export const DISCONNECT = "disconnect";
-export const OPEN = "open";
-export const CLOSE = "close";
 export const MESSAGE = "message";
-export const HEARTBEAT = "heartbeat";
-export const PING = "ping";
+
+// REQUESTS:
+export const replaceRequestError = requestId =>
+  `WebSocket request is replaced, id: ${requestId}`;
+export const requestTimeoutError = (action, timeout) =>
+  `Action: "${action}" was rejected by timeout (${timeout} ms).`;
 
 // ERRORS:
-export const INVALID_TOKEN = "ChatSDK: Invalid token";
-export const SOCKET_NOT_OPENED = "ChatSDK: Socket is not opened.";
+export const API_NOT_READY = "ChatSDK: API is not ready yet";
+export const AGENT_NOT_LOGGED_IN =
+  "ChatSDK.getAgentDetails: Agent is not logged in yet.";
 export const SOCKET_ALREADY_OPEN = "ChatSDK: Socket is already open.";
-export const SOCKET_NOT_CONNECTED = "ChatSDK: Socket is not connected.";
 export const ERROR_INIT_MISSING_CONFIG = "ChatSDK.init: Missing config";
 export const ERROR_INIT_MISSING_TOKEN =
   "ChatSDK.init: Incorrect config, missing 'access_token' value";

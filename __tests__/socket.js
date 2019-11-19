@@ -1,69 +1,47 @@
-import Socket from "../src/socket";
+import SocketClient from "../src/socket";
 import mitt from "@livechat/mitt";
-import { SOCKET_NOT_CONNECTED } from "../src/constants";
 
 let ws, emitter;
 const mockedRequestBody = { action: "test" };
+const mockedRequestId = "12345";
 
-describe("Socket client", () => {
+describe("SocketClient client", () => {
   beforeAll(() => {
     const config = { account_token: "some_token" };
 
     emitter = mitt();
-    ws = new Socket(emitter, config);
+    ws = new SocketClient(emitter, config);
   });
 
-  test("send method before init", () => {
-    expect(() => ws.send(mockedRequestBody)).toThrowError(SOCKET_NOT_CONNECTED);
-  });
+  beforeEach(() => ws.destroy())
 
   test("init", () => {
-    const spyConnect = jest.spyOn(ws, "_connect");
-    const spyListeners = jest.spyOn(ws, "_addEventListeners");
+    const spyConnect = jest.spyOn(ws.client, "connect");
 
     ws.init();
 
-    expect(ws.isOpen).toBe(true);
-    expect(ws.isConnected).toBe(true);
-
     expect(spyConnect).toHaveBeenCalled();
-    expect(spyListeners).toHaveBeenCalled();
   });
 
   test("send method", () => {
+    ws.init();
+
     const spySend = jest.spyOn(ws, "send");
+    const spyRequestsCreate = jest.spyOn(ws.requests, "create");
 
-    const getSocketResponse = () =>
-      new Promise(resolve => {
-        emitter.on(mockedRequestBody.action, data => {
-          resolve(data);
-        });
+    ws.send(mockedRequestId, mockedRequestBody);
 
-        ws.send(mockedRequestBody);
-      });
-
-    return getSocketResponse().then(data => {
-      expect(data.payload).toEqual(mockedRequestBody);
-      expect(spySend).toHaveBeenCalledWith(mockedRequestBody);
-    });
+    expect(spySend).toHaveBeenCalledWith(mockedRequestId, mockedRequestBody);
+    expect(spyRequestsCreate).toHaveBeenCalled();
   });
 
   test("destroy", () => {
-    const spyDisconnect = jest.spyOn(ws, "_disconnect");
-    const spyClose = jest.spyOn(ws, "_closeSocketConnection");
-    const spyRemoveListeners = jest.spyOn(ws, "_removeEventListeners");
+    const spyDestroy = jest.spyOn(ws.client, "destroy");
+    const spyEmitter = jest.spyOn(ws.emitter, "off");
 
     ws.destroy();
 
-    expect(ws.isOpen).toBe(false);
-    expect(ws.isConnected).toBe(false);
-
-    expect(spyDisconnect).toHaveBeenCalled();
-    expect(spyClose).toHaveBeenCalled();
-    expect(spyRemoveListeners).toHaveBeenCalled();
-  });
-
-  test("send method after destroy", () => {
-    expect(() => ws.send(mockedRequestBody)).toThrowError(SOCKET_NOT_CONNECTED);
+    expect(spyEmitter).toHaveBeenCalled();
+    expect(spyDestroy).toHaveBeenCalled();
   });
 });
