@@ -1,10 +1,10 @@
 import babel from "rollup-plugin-babel";
 import commonjs from "rollup-plugin-commonjs";
 import resolve from "rollup-plugin-node-resolve";
-import dotenv from "rollup-plugin-dotenv";
 import autoExternal from "rollup-plugin-auto-external";
 import replace from "rollup-plugin-replace";
 import { uglify } from "rollup-plugin-uglify";
+import dotenv from "rollup-plugin-dotenv";
 import pkg from "./package.json";
 
 const ensureArray = maybeArr =>
@@ -12,34 +12,30 @@ const ensureArray = maybeArr =>
 
 const globals = {
   "@livechat/mitt": "mitt",
-  backo2: "Backoff",
-  "sockjs-client": "SockJS"
+  "@livechat/platform-client": "Client",
+  "promise-controller": "PromiseController",
+  shortid: "shortid"
 };
-
-const extensions = ["js"];
 
 const createConfig = ({
   input = "src/index.js",
   output,
   env,
-  minimalize = false
+  minimalize = false,
+  useGlobals = false
 } = {}) => ({
   input,
   output: ensureArray(output).map(format =>
     Object.assign({}, format, {
       name: "ChatSDK",
-      globals
+      globals: useGlobals && globals
     })
   ),
   plugins: [
     autoExternal(),
     dotenv(),
-    resolve({ browser: true, extensions }),
-    babel({
-      exclude: "node_modules/**",
-      extensions,
-      babelrcRoots: __dirname + "/../*"
-    }),
+    resolve({ browser: true }),
+    babel({ exclude: "node_modules/**" }),
     commonjs(),
     env &&
       replace({
@@ -74,6 +70,7 @@ export default [
   }),
   createConfig({
     env: "development",
+    useGlobals: true,
     output: {
       file: pkg.main,
       format: "umd"
@@ -81,6 +78,7 @@ export default [
   }),
   createConfig({
     env: "production",
+    useGlobals: true,
     minimalize: true,
     output: {
       file: pkg.main.replace(/\.js$/, ".min.js"),
