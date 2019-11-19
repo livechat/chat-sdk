@@ -17,9 +17,9 @@ npm i @livechat/chat-sdk
 ​
 ## Initial configuration
 ​
+###
 | Parameter         | Required | Data type | Notes                                                    |
 | ----------------- | -------- | --------- | -------------------------------------------------------- |
-| account_token     | `true`   | `string`  | An access token authorizing you with the Agent Chat API. |
 | apiVersion        | `false`  | `string`  | Call a different API version than the default one.       |
 | debug             | `false`  | `boolean` | Display all messages exchanged with the LiveChat API.    |
 | region            | `false`  | `string`  | Specify a data center. Possible values:`europe` and `america` (default). |
