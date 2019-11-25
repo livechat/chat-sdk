@@ -1,19 +1,16 @@
 import SocketClient from "../src/socket";
 import mitt from "@livechat/mitt";
 
-let ws, emitter;
+let ws, sdkEmitter, platformEmitter;
 const mockedRequestBody = { action: "test" };
 const mockedRequestId = "12345";
 
 describe("SocketClient client", () => {
   beforeAll(() => {
-    const config = { account_token: "some_token" };
-
-    emitter = mitt();
-    ws = new SocketClient(emitter, config);
+    sdkEmitter = mitt();
+    platformEmitter = mitt();
+    ws = new SocketClient({ sdkEmitter, platformEmitter, config: {} });
   });
-
-  beforeEach(() => ws.destroy())
 
   test("init", () => {
     const spyConnect = jest.spyOn(ws.client, "connect");
@@ -37,7 +34,7 @@ describe("SocketClient client", () => {
 
   test("destroy", () => {
     const spyDestroy = jest.spyOn(ws.client, "destroy");
-    const spyEmitter = jest.spyOn(ws.emitter, "off");
+    const spyEmitter = jest.spyOn(ws._platformEmitter, "off");
 
     ws.destroy();
 

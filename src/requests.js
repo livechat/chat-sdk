@@ -37,8 +37,6 @@ class Requests {
 
     this._items.set(requestId, request);
 
-    console.log(requestBody, payload);
-
     return this._promiseFinally(request.start(), () =>
       this._deleteRequest(requestId)
     );
