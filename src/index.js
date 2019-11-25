@@ -1,21 +1,30 @@
 import SocketClient from "./socket";
 import mitt from "@livechat/mitt";
 import { validateConfig } from "./utils";
-import shortId from "shortid";
 import {
   LOGIN,
+  READY,
   CONNECT,
   SEND_EVENT,
   API_NOT_READY,
   AGENT_NOT_LOGGED_IN,
   ERROR_METHOD_FACTORY_INCORRECT_PARAMS,
-  ERROR_SEND_MESSAGE_MISSING_CHAT_ID
+  ERROR_SEND_MESSAGE_MISSING_CHAT_ID,
+  ERROR_SEND_MESSAGE_MISSING_MESSAGE
 } from "./constants";
 
 class SDK {
-  constructor(config) {
-    this.emitter = mitt();
-    this._AGENT_API_RTM = new SocketClient(this.emitter, config);
+  constructor(config = {}) {
+    this.config = config;
+
+    this.sdkEmitter = mitt();
+    this.platformEmitter = mitt();
+
+    this._AGENT_API_RTM = new SocketClient({
+      sdkEmitter: this.sdkEmitter,
+      platformEmitter: this.platformEmitter,
+      config
+    });
 
     this._agentDetails = {};
     this._authConfig = null;
@@ -33,7 +42,7 @@ class SDK {
       if (this._checkRtmConnection()) {
         return func(resolve, reject);
       } else {
-        console.error(API_NOT_READY);
+        reject(API_NOT_READY);
       }
     });
 
@@ -53,15 +62,20 @@ class SDK {
    * Handle RTM API push notifications for internal SDK usage
    */
   _eventListeners = () => {
-    this.on(CONNECT, () => {
+    this.platformEmitter.on(CONNECT, () => {
       this._login()
         .then(data => {
           this._isLoggedIn = true;
           this._agentDetails = data;
+
+          this.sdkEmitter.emit(READY);
         })
         .catch(err => {
           this._isLoggedIn = false;
-          if (this.config.debug) console.warn(err);
+
+          if (this.config.debug) {
+            console.warn(err);
+          }
         });
     });
   };
@@ -98,20 +112,10 @@ class SDK {
         reject(ERROR_METHOD_FACTORY_INCORRECT_PARAMS);
       }
 
-      const requestId = shortId.generate();
-      const eventListener = requestBody && requestBody.action;
-
-      this.on(eventListener, data => {
-        if (data && data.request_id === requestId) {
-          if (data.success) {
-            resolve((data && data.payload) || {});
-          } else {
-            reject(data.error);
-          }
-        }
-      });
-
-      this._AGENT_API_RTM.send(requestId, requestBody, timeout);
+      this._AGENT_API_RTM
+        .send(requestBody, timeout)
+        .then(data => resolve(data && data.payload))
+        .catch(err => reject(err));
     });
 
   /**
@@ -130,8 +134,9 @@ class SDK {
   /**
    * Send event with plain text message
    */
-  sendMessage = (chat_id, message = "", recipients = "all") => {
+  sendMessage = (chat_id, message, recipients = "all") => {
     if (!chat_id) throw new Error(ERROR_SEND_MESSAGE_MISSING_CHAT_ID);
+    if (!message) throw new Error(ERROR_SEND_MESSAGE_MISSING_MESSAGE);
 
     return this.methodFactory({
       action: SEND_EVENT,
@@ -147,9 +152,9 @@ class SDK {
   };
 
   // ##### EMITTER METHODS #####
-  on = (...args) => this.emitter.on(...args);
-  once = (...args) => this.emitter.once(...args);
-  off = (...args) => this.emitter.off(...args);
+  on = (...args) => this.sdkEmitter.on(...args);
+  once = (...args) => this.sdkEmitter.once(...args);
+  off = (...args) => this.sdkEmitter.off(...args);
 }
 
 export default SDK;

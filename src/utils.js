@@ -3,16 +3,6 @@ import {
   ERROR_INIT_MISSING_TOKEN
 } from "./constants";
 
-export function debounce(func, timeout) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      func(...args);
-    }, timeout);
-  };
-}
-
 export function validateConfig(config) {
   if (!config) {
     throw new Error(ERROR_INIT_MISSING_CONFIG);
