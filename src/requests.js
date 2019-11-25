@@ -1,47 +1,47 @@
-import PromiseController from "promise-controller";
-import { replaceRequestError, requestTimeoutError } from "./constants";
-
-export const DEFAULT_REQUEST_TIMEOUT = 10 * 1000;
+import { generateRandomId } from "@livechat/data-utils";
+import { requestTimeoutError } from "./constants";
+import RequestController, {
+  DEFAULT_REQUEST_TIMEOUT
+} from "./requestController";
 
 class Requests {
-  constructor() {
+  constructor(socketEmitter) {
+    this._socketEmitter = socketEmitter;
     this._items = new Map();
-  }
-
-  _rejectExistingRequest(requestId) {
-    const existingRequest = this._items.get(requestId);
-    if (existingRequest && existingRequest.isPending) {
-      existingRequest.reject(new Error(replaceRequestError(requestId)));
-    }
   }
 
   _promiseFinally(promise, callback) {
     return promise.finally(callback);
   }
 
-  _createNewRequest(requestId, client, payload, timeout) {
-    const request = new PromiseController({
+  _deleteRequest(requestId) {
+    this._items.delete(requestId);
+  }
+
+  _generateUniqueId() {
+    const id = generateRandomId();
+    return this._items.has(id) ? this._generateUniqueId() : id;
+  }
+
+  // ##### PUBLIC METHODS ######
+
+  create(requestBody, timeout = DEFAULT_REQUEST_TIMEOUT) {
+    const requestId = this._generateUniqueId();
+    const payload = { request_id: requestId, ...requestBody };
+
+    const request = new RequestController({
       timeout,
-      timeoutReason: requestTimeoutError(payload.action, timeout)
+      timeoutReason: requestTimeoutError(timeout, payload.action),
+      action: () => this._socketEmitter(payload)
     });
 
     this._items.set(requestId, request);
 
-    return this._promiseFinally(request.call(client(payload)), () =>
-      this._deleteRequest(requestId, request)
+    console.log(requestBody, payload);
+
+    return this._promiseFinally(request.start(), () =>
+      this._deleteRequest(requestId)
     );
-  }
-
-  _deleteRequest(requestId, request) {
-    if (this._items.get(requestId) === request) {
-      this._items.delete(requestId);
-    }
-  }
-
-  // ##### PUBLIC METHODS ######
-  create(requestId, client, payload, timeout = DEFAULT_REQUEST_TIMEOUT) {
-    this._rejectExistingRequest(requestId);
-    return this._createNewRequest(requestId, client, payload, timeout);
   }
 
   resolve(requestId, data) {
@@ -52,18 +52,12 @@ class Requests {
 
   reject(requestId, error) {
     if (requestId && this._items.has(requestId)) {
-      const request = this._items.get(requestId);
-
-      if (request && request.isPending) {
-        request.reject(error);
-      }
+      this._items.get(requestId).reject(error);
     }
   }
 
   rejectAll(error) {
-    this._items.forEach(request =>
-      request.isPending ? request.reject(error) : null
-    );
+    this._items.forEach(request => request.reject(error));
   }
 }
 

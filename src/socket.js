@@ -1,18 +1,30 @@
-import Client from "@livechat/platform-client";
+import platformClient from "@livechat/platform-client";
+import Requests from "./requests";
 import { getRtmUrl } from "./utils";
-import { SOCKET_ALREADY_OPEN, CONNECT, DISCONNECT, MESSAGE } from "./constants";
-import Request from "./requests";
+import {
+  SOCKET_ALREADY_OPEN,
+  SOCKET_DISCONNECT_ERROR,
+  CONNECT,
+  DISCONNECT,
+  MESSAGE,
+  LOG_RESPONSE,
+  LOG_PUSH,
+  LOG_SEND
+} from "./constants";
 
 class SocketClient {
-  constructor(emitter, config = {}) {
-    this.emitter = emitter;
+  constructor({ sdkEmitter, platformEmitter, config }) {
     this.config = config;
-    this.isConnected = false;
+    this._sdkEmitter = sdkEmitter;
+    this._platformEmitter = platformEmitter;
 
-    this.client = new Client(getRtmUrl(config), { emitter: this.emitter });
+    this.client = platformClient(getRtmUrl(config), {
+      emitter: this._platformEmitter
+    });
     this._handleIncomingEvents();
 
-    this.requests = new Request();
+    this.isConnected = false;
+    this.requests = new Requests(this.client.emit);
   }
 
   _handleIncomingEvents = () => {
@@ -22,23 +34,31 @@ class SocketClient {
 
     this.client.on(DISCONNECT, () => {
       this.isConnected = false;
-      this.requests.rejectAll();
+      this.requests.rejectAll(SOCKET_DISCONNECT_ERROR);
     });
 
     this.client.on(MESSAGE, message => {
-      try {
-        this.requests.resolve(message.request_id, message);
-
-        if (message && message.action) {
-          this.emitter.emit(message.action, message);
-
-          if (this.config.debug) {
-            console.log("Receive: ", message);
-          }
+      if (message.request_id) {
+        if (this.config.debug) {
+          console.log(LOG_RESPONSE, message);
         }
-      } catch (err) {
-        this.requests.reject(message.request_id, err);
-        if (this.config.debug) console.warn(err);
+
+        // handle responses
+        if (message.success) {
+          this.requests.resolve(message.request_id, message);
+        } else {
+          this.requests.reject(message.request_id, message);
+        }
+
+        // handle push messages
+      } else if (message.type === "push") {
+        if (message && message.action) {
+          if (this.config.debug) {
+            console.log(LOG_PUSH, message);
+          }
+
+          this._sdkEmitter.emit(message.action, message);
+        }
       }
     });
   };
@@ -63,21 +83,20 @@ class SocketClient {
    * @param requestBody - request payload
    * @param timeout - time after request will be rejected
    */
-  send = (requestId, requestBody, timeout) => {
-    const payload = { request_id: requestId, ...requestBody };
-    this.requests.create(requestId, this.client.emit, payload, timeout);
-
+  send = (requestBody, timeout) => {
     if (this.config.debug) {
-      console.log("Send: ", payload);
+      console.log(LOG_SEND, requestBody);
     }
+
+    return this.requests.create(requestBody, timeout);
   };
 
   /**
    * Clears event listeners and disconnect API
    */
   destroy = () => {
-    this.emitter.off();
     this.client.destroy();
+    this._platformEmitter.off();
   };
 }
 
