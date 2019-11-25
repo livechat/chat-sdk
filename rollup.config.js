@@ -12,9 +12,8 @@ const ensureArray = maybeArr =>
 
 const globals = {
   "@livechat/mitt": "mitt",
-  "@livechat/platform-client": "Client",
-  "promise-controller": "PromiseController",
-  shortid: "shortid"
+  "@livechat/platform-client": "platformClient",
+  "@livechat/data-utils": "dataUtils"
 };
 
 const createConfig = ({
