@@ -60,7 +60,7 @@ const ChatMessages = ({ chatInfo, chatMessages, onlyMessages = false }) => {
             }
           })}
 
-        {chatMessages && !chatMessages.length && <ChatInstruction />}
+        {chatInfo && chatMessages && !chatMessages.length && <ChatInstruction />}
       </MessageWrapper>
 
       {!onlyMessages && <ChatForm chatId={(chatInfo && chatInfo.id) || null} />}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getChatThreads, getArchives, ChatSDK } from "../Logic";
+import { getChatThreads, getArchives } from "../Logic";
 import styled from "styled-components";
 
 // COMPONENTS:
@@ -23,6 +23,20 @@ const ArchivedChats = () => {
   const [chatInfo, setChatInfo] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
 
+  const pickChat = chatItem => {
+    const chatId = chatItem.id;
+    const lastThreadId = chatItem.thread && chatItem.thread.id;
+
+    getChatThreads(chatId, [lastThreadId]).then(({ chat }) => {
+      setChatInfo(chat);
+
+      if (chat.threads.length) {
+        const msgs = chat.threads[0].events;
+        setChatMessages(msgs);
+      }
+    });
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -33,32 +47,12 @@ const ArchivedChats = () => {
       }
     });
 
-    const handleThreads = ({ payload }) => {
-      if (isMounted) {
-        setChatInfo(payload.chat);
-
-        if (payload.chat.threads.length) {
-          const msgs = payload.chat.threads[0].events;
-          setChatMessages(msgs);
-        }
-      }
-    };
-
-    ChatSDK.on("get_chat_threads", handleThreads);
-
     return () => {
-      ChatSDK.off("get_chat_threads", handleThreads);
       isMounted = false;
     };
   }, []);
 
-  const pickChat = chatItem => {
-    const chatId = chatItem.id;
-    const lastThreadId = chatItem.thread && chatItem.thread.id;
-    getChatThreads(chatId, [lastThreadId]);
-  };
-
-  if (!chatList || !chatInfo) return <Loader />;
+  if (!chatList) return <Loader />;
 
   return (
     <Wrapper>
