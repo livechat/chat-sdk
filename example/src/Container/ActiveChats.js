@@ -24,6 +24,8 @@ const ActiveChats = () => {
   const [chatInfo, setChatInfo] = useState({});
   const activeChatId = (chatInfo && chatInfo.id) || null;
 
+  const { messages, setMessages } = useChatMessages(activeChatId);
+
   const pickChat = chatItem => {
     const chatId = chatItem.id;
     const chatLastThreadId =
@@ -31,11 +33,15 @@ const ActiveChats = () => {
       chatItem.last_thread_summary.id;
 
     setChatInfo(chatItem);
-    getChatThreads(chatId, [chatLastThreadId]);
+    getChatThreads(chatId, [chatLastThreadId]).then(({ chat }) => {
+      if ((chat && chat.id) === chatId && chat.threads.length) {
+        const msgs = chat.threads[0].events;
+        setMessages(msgs);
+      }
+    });
   };
 
   const { chatList, setChatList } = useChatList(pickChat);
-  const { messages } = useChatMessages(activeChatId);
 
   useEffect(() => {
     let isMounted = true;
@@ -43,6 +49,7 @@ const ActiveChats = () => {
     ChatSDK.getAgentDetails().then(data => {
       if (isMounted && data && data.chats_summary) {
         const agentsActiveChats = data.chats_summary;
+
         if (agentsActiveChats.length) {
           pickChat(agentsActiveChats[0]);
           setChatList(agentsActiveChats);
@@ -50,8 +57,8 @@ const ActiveChats = () => {
       }
     });
 
-    return () => isMounted = false;
-  }, [setChatList]);
+    return () => (isMounted = false);
+  }, []);
 
   return (
     <Wrapper>

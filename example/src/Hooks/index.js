@@ -9,8 +9,11 @@ export function useChatMessages(chatId) {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
+    let isMounted = true;
+
     const handleThreads = ({ payload }) => {
       if (
+        isMounted &&
         payload.chat &&
         payload.chat.id === chatId &&
         payload.chat.threads.length
@@ -21,7 +24,7 @@ export function useChatMessages(chatId) {
     };
 
     const handleNewMessages = ({ payload }) => {
-      if (payload.chat_id === chatId) {
+      if (isMounted && payload.chat_id === chatId) {
         const msgs = [...messages, payload.event];
         setMessages(msgs);
       }
@@ -31,11 +34,12 @@ export function useChatMessages(chatId) {
     ChatSDK.on("incoming_event", handleNewMessages);
 
     // Listen to event sent after fetch chat threads
-    ChatSDK.on("get_chat_threads", handleThreads);
+    ChatSDK.on("incoming_chat_thread", handleThreads);
 
     return () => {
-      ChatSDK.off("get_chat_threads", handleThreads);
+      ChatSDK.off("incoming_chat_thread", handleThreads);
       ChatSDK.off("incoming_event", handleNewMessages);
+      isMounted = false
     };
   }, [chatId, messages]);
 
@@ -55,10 +59,12 @@ export function useChatList(pickChat) {
   const [chatList, setChatList] = useState([]);
 
   useEffect(() => {
+    let isMounted = true;
+
     const handleIncomingChats = data => {
       const incomingChat = data.payload.chat;
 
-      if (!chatList.some(({ id }) => id === incomingChat.id)) {
+      if (isMounted && !chatList.some(({ id }) => id === incomingChat.id)) {
         if (!chatList.length) pickChat(incomingChat);
         setChatList([...chatList, incomingChat]);
       }
@@ -68,7 +74,9 @@ export function useChatList(pickChat) {
       const closedChat = data.payload.chat_id;
       const updatedChatList = chatList.filter(({ id }) => id !== closedChat);
 
-      setChatList(updatedChatList);
+      if (isMounted) {
+        setChatList(updatedChatList);
+      }
     };
 
     ChatSDK.on("incoming_chat_thread", handleIncomingChats);
@@ -77,6 +85,7 @@ export function useChatList(pickChat) {
     return () => {
       ChatSDK.off("incoming_chat_thread", handleIncomingChats);
       ChatSDK.off("thread_closed", handleClosingThread);
+      isMounted = false;
     };
   }, [chatList, pickChat]);
 

@@ -49,9 +49,10 @@ class SocketClient {
         } else {
           this.requests.reject(message.request_id, message);
         }
+      }
 
-        // handle push messages
-      } else if (message.type === "push") {
+      // handle push messages
+      if (message.type === "push") {
         if (message && message.action) {
           if (this.config.debug) {
             console.log(LOG_PUSH, message);

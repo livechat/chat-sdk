@@ -69,7 +69,7 @@ const App = () => {
     let isMounted = true;
 
     // Wait with render until app will get all necessary info from API
-    ChatSDK.on("READY", () => {
+    ChatSDK.on("ready", () => {
       if (isMounted) {
         setIsReadyToRender(true);
       }

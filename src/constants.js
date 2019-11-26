@@ -1,7 +1,7 @@
 // RTM API EVENTS:
 export const LOGIN = "login";
 export const SEND_EVENT = "send_event";
-export const READY = "READY";
+export const READY = "ready";
 
 // WEBSOCKET:
 export const CONNECT = "connect";

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import styled from "styled-components";
 
 // COMPONENTS:
@@ -31,14 +31,20 @@ const MessageWrapper = styled.div`
  * Display chat messages
  */
 const ChatMessages = ({ chatInfo, chatMessages, onlyMessages = false }) => {
+  const ref = useRef();
+
   const getChatUser = authorId => {
     const chatUsers = chatInfo.users;
     return chatUsers.find(({ id }) => id === authorId) || { type: "customer" };
   };
 
+  useEffect(() => {
+    ref.current.scrollTo(0, ref.current.scrollHeight);
+  }, [chatMessages]);
+
   return (
     <Wrapper>
-      <MessageWrapper onlyMessages={onlyMessages}>
+      <MessageWrapper ref={ref} onlyMessages={onlyMessages}>
         {chatMessages &&
           chatMessages.map(message => {
             const user = getChatUser(message.author_id);
@@ -60,7 +66,9 @@ const ChatMessages = ({ chatInfo, chatMessages, onlyMessages = false }) => {
             }
           })}
 
-        {chatInfo && chatMessages && !chatMessages.length && <ChatInstruction />}
+        {chatInfo && chatMessages && !chatMessages.length && (
+          <ChatInstruction />
+        )}
       </MessageWrapper>
 
       {!onlyMessages && <ChatForm chatId={(chatInfo && chatInfo.id) || null} />}
