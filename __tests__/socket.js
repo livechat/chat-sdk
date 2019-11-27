@@ -21,8 +21,6 @@ describe("SocketClient client", () => {
   });
 
   test("send method", () => {
-    ws.init();
-
     const spySend = jest.spyOn(ws, "send");
     const spyRequestsCreate = jest.spyOn(ws.requests, "create");
 

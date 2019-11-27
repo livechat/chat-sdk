@@ -25,7 +25,7 @@ npm i @livechat/chat-sdk
 | region            | `false`  | `string`  | Specify a data center. Possible values:`europe` and `america` (default). |
 ​
 ```js
-const chatSDK = new ChatSDK({ account_token: TOKEN })
+const chatSDK = new ChatSDK({ debug: true })
 ```
 ​
 ## Methods
@@ -35,8 +35,18 @@ const chatSDK = new ChatSDK({ account_token: TOKEN })
 It intializes the WebSocket connection, attaches event listeners, and then logs in the Agent.
 ​
 ```js
-chatSDK.init() 
+chatSDK.init({
+    access_token: access_token
+})
 ```
+
+
+  #### Parameters
+
+  | Parameter      | Required | Data type | Notes                                                                                                  |
+ | -------------- | -------- | --------- | ------------------------------------------------------------------------------------------------------ |
+ | `access_token` |   Yes    | `object`  | See [Authorization](#authorization) to learn how to get an access token. Optionally, you can acquire it directly from [Accounts SDK](/getting-started/authorization/sign-in-with-livechat/#sdk-documentation) and pass it in to the `init()` method. The **Simple Agent** app uses this mechanism. |
+
 ​
 ### destroy
 ​
@@ -50,12 +60,16 @@ chatSDK.destroy()
 ​
 It allows you to get information about the currently logged in Agent.
 ​
-```js
+
+```js     
 chatSDK.getAgentDetails() 
     .then(agentData => {
-        // access to the agent data object
+        // access to the agentData object
     }) 
-```
+    .catch(error => {
+        // catch an error object
+    })
+ ```
 ​
 ### sendMessage
 ​
@@ -115,14 +129,13 @@ chatSDK.on("event_name", (data) => {
     console.log(data)
 })
 ```
-​
 Here's what you can listen for:
 
-| EVENT NAME    | ACTION                          |
-| ------------- | ------------------------------- |
-| `connect`	    | Websocket connection started    |
-| `disconnect`	| Websocket connection ended      |
-| Pushes	    | Refer to [documentation](https://developers.labs.livechatinc.com/docs/feature/chat-sdk/messaging/agent-chat-api/rtm-reference/#pushes)          |
+  | Event name   | Action     | 
+ | ------------ | ---------- |
+ | `ready`      | You've been successfully logged in. You're now ready to use all API methods. |
+ |  Pushes      | Refer to [documentation](/messaging/agent-chat-api/rtm-reference/#pushes).   |
+
 
 ## once
 ​
@@ -144,6 +157,30 @@ chatSDK.off("event_name", (data) => {
 })
 ```
 ​
+## Simple Agent - Example
+
+To show you **Chat SDK** in action, we've prepared a sample app, **Simple Agent** . It's primary function is to send text messages. Apart from that, it gives you access to previous conversations, 
+as well as the info about the current Agent.
+
+To run the app, follow these 3 steps:
+
+1. [Create an app](/getting-started/guides/#creating-livechat-apps) in Developer Console. You need it to get **Client Id**. Once the app is created, you can find your **Client Id** in
+**Building Blocks -> Authorization** in Developer Console.
+
+2. Paste your **Client Id** into the `.env` file in `/example` folder.
+
+3. Run **Simple Agent** with the following commands:
+
+```js
+npm run install-example //install dependencies 
+
+npm run start-example //start the app
+```
+
+To start a chat, log in to you LiveChat account and choose the **Preview live** option available in the **Settings** tab. You'll now be able to receive messages and respond to them from within **Simple Agent**.
+
+It's worth mentioning that all functions invoked before logging in are queued. Once you're logged in, they are executed in the same order as they were invoked.  
+
 ## Feedback
 ​
 If you find some bugs or have trobules implementing the code on your own, please create an issue on this repo.
