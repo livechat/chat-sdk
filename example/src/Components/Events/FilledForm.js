@@ -2,10 +2,18 @@ import React from "react";
 import { Card } from "@livechat/design-system";
 
 const FilledForm = ({ message }) => (
-  <Card title="Prechat Survey">
-    {message.fields.map(({ id, label, answer }) => (
+  <Card title="Survey">
+    {message.fields.map(({ id, label, answer, type }) => (
       <p key={id}>
-        <b>{label}</b> {answer}
+        {type === "radio" ? (
+          <span>
+            <b>{label} </b> {answer.label}{" "}
+          </span>
+        ) : (
+          <span>
+            <b>{label}</b> {answer}
+          </span>
+        )}
       </p>
     ))}
   </Card>

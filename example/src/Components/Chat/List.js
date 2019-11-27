@@ -15,14 +15,15 @@ const ChatList = ({ chatList, activeChatId, pickChat }) => (
     {chatList &&
       !!chatList.length &&
       chatList.map(chatItem => {
-        const threadId = (chatItem.thread && chatItem.thread.id) || chatItem.id;
-        const isActive = activeChatId === threadId;
+        const chatId = chatItem.id
+        const threadId = chatItem.thread && chatItem.thread.id;
+        const isActive = activeChatId === threadId || activeChatId === chatId;
         const customerName = chatItem.users[0].name;
         const handleClick = () => pickChat(chatItem);
 
         return (
           <Button
-            key={threadId}
+            key={threadId+chatId}
             onClick={handleClick}
             style={{ marginBottom: 10 }}
             primary={isActive}

@@ -16,7 +16,8 @@ export const useAuth = () => {
       client_id: process.env.REACT_APP_CLIENT_ID,
       onIdentityFetched: async (error, data) => {
         if (error) {
-          console.error(error);
+          console.error('Authorization problem: ', error)
+          instance.current.openPopup();
           setAuth(initialAuthState);
           return;
         }

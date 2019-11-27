@@ -76,6 +76,7 @@ export function useChatList(pickChat) {
 
       if (isMounted) {
         setChatList(updatedChatList);
+        pickChat(null)
       }
     };
 

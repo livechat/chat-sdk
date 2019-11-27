@@ -5,6 +5,7 @@ import styled from "styled-components";
 // COMPONENTS:
 import ChatsList from "../Components/Chat/List";
 import ChatMessages from "../Components/Chat/Messages";
+import Loader from "../Components/Loader";
 
 // CUSTOM HOOKS:
 import { useChatList, useChatMessages } from "../Hooks";
@@ -21,24 +22,34 @@ const Wrapper = styled.div`
  * Display currently active agent's chats
  */
 const ActiveChats = () => {
+  const [isReady, setIsReady] = useState(false);
   const [chatInfo, setChatInfo] = useState({});
   const activeChatId = (chatInfo && chatInfo.id) || null;
+
+  console.log(chatInfo, activeChatId)
 
   const { messages, setMessages } = useChatMessages(activeChatId);
 
   const pickChat = chatItem => {
-    const chatId = chatItem.id;
-    const chatLastThreadId =
-      (chatItem.thread && chatItem.thread.id) ||
-      chatItem.last_thread_summary.id;
+    if (!chatItem) {
+      setMessages([]);
+      setChatInfo({})
+    } else {
+      const chatId = chatItem.id;
+      const chatLastThreadId =
+        (chatItem.thread && chatItem.thread.id) ||
+        chatItem.last_thread_summary.id;
 
-    setChatInfo(chatItem);
-    getChatThreads(chatId, [chatLastThreadId]).then(({ chat }) => {
-      if ((chat && chat.id) === chatId && chat.threads.length) {
-        const msgs = chat.threads[0].events;
-        setMessages(msgs);
-      }
-    });
+      setChatInfo(chatItem);
+      getChatThreads(chatId, [chatLastThreadId]).then(({ chat }) => {
+        if ((chat && chat.id) === chatId && chat.threads.length) {
+          const msgs = chat.threads[0].events;
+          setMessages(msgs);
+        }
+
+        setIsReady(true);
+      });
+    }
   };
 
   const { chatList, setChatList } = useChatList(pickChat);
@@ -51,14 +62,20 @@ const ActiveChats = () => {
         const agentsActiveChats = data.chats_summary;
 
         if (agentsActiveChats.length) {
-          pickChat(agentsActiveChats[0]);
           setChatList(agentsActiveChats);
+          pickChat(agentsActiveChats[0]);
+        } else {
+          setIsReady(true);
         }
       }
     });
 
-    return () => (isMounted = false);
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  if (!isReady) return <Loader />;
 
   return (
     <Wrapper>
