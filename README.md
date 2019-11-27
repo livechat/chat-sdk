@@ -28,6 +28,16 @@ npm i @livechat/chat-sdk
 const chatSDK = new ChatSDK({ debug: true })
 ```
 ​
+### Authorization
+
+  To use Chat SDK, you will need to provide an access token authorizing you with the [Agent Chat API](https://developers.livechatinc.com/docs/getting-started/authorization/sign-in-with-livechat/#sdk-documentation).
+
+  If you don't know how to get one, make sure to check out these resources:
+
+  - [Agent authorization flows](https://developers.livechatinc.com/docs/getting-started/authorization/#agent-authorization-flows/)
+ - [Messaging APIs in practice](https://developers.livechatinc.com/docs/getting-started/guides/messaging-apis-in-practice/)
+  
+  
 ## Methods
 ​
 ### init
@@ -45,7 +55,7 @@ chatSDK.init({
 
   | Parameter      | Required | Data type | Notes                                                                                                  |
  | -------------- | -------- | --------- | ------------------------------------------------------------------------------------------------------ |
- | `access_token` |   Yes    | `object`  | See [Authorization](#authorization) to learn how to get an access token. Optionally, you can acquire it directly from [Accounts SDK](/getting-started/authorization/sign-in-with-livechat/#sdk-documentation) and pass it in to the `init()` method. The **Simple Agent** app uses this mechanism. |
+ | `access_token` |   Yes    | `object`  | See [Authorization](#authorization) to learn how to get an access token. Optionally, you can acquire it directly from [Accounts SDK](https://developers.livechatinc.com/docs/getting-started/authorization/sign-in-with-livechat/#sdk-documentation) and pass it in to the `init()` method. The **Simple Agent** app uses this mechanism. |
 
 ​
 ### destroy
@@ -134,7 +144,7 @@ Here's what you can listen for:
   | Event name   | Action     | 
  | ------------ | ---------- |
  | `ready`      | You've been successfully logged in. You're now ready to use all API methods. |
- |  Pushes      | Refer to [documentation](/messaging/agent-chat-api/rtm-reference/#pushes).   |
+ |  Pushes      | Refer to [documentation](https://developers.livechatinc.com/docs/messaging/agent-chat-api/rtm-reference/#pushes).   |
 
 
 ## once
@@ -164,7 +174,7 @@ as well as the info about the current Agent.
 
 To run the app, follow these 3 steps:
 
-1. [Create an app](/getting-started/guides/#creating-livechat-apps) in Developer Console. You need it to get **Client Id**. Once the app is created, you can find your **Client Id** in
+1. [Create an app](https://developers.livechatinc.com/docs/getting-started/guides/#creating-livechat-apps)
 **Building Blocks -> Authorization** in Developer Console.
 
 2. Paste your **Client Id** into the `.env` file in `/example` folder.
