@@ -5,7 +5,7 @@ Lightweight JavaScript SDK for LiveChat Messaging APIs.
 Chat SDK was designed to help developers build apps in a quick and easy way. Under the hood, it makes use of the LiveChat Messaging APIs, taking care of this part for you. By default, Chat SDK comes with a method for sending plain text messages. Based on the method template we provide, you can easily build other methods. Thanks to that, you have the flexibility to cover the functionalities you need for your app.
 ​
 
-For full documentation, please head to __[LiveChat Docs](https://developers.livechat.com/docs/feature/chat-sdk/messaging/chat-sdk/)__.
+For full documentation, please head to __[LiveChat Docs](https://developers.livechat.com/docs/messaging/chat-sdk/)__.
 ​
 ## Installation
 ​
