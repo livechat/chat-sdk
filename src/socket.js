@@ -9,7 +9,8 @@ import {
   MESSAGE,
   LOG_RESPONSE,
   LOG_PUSH,
-  LOG_SEND
+  LOG_SEND,
+  PUSH_MESSAGE
 } from "./constants";
 
 class SocketClient {
@@ -52,7 +53,7 @@ class SocketClient {
       }
 
       // handle push messages
-      if (message.type === "push") {
+      if (message.type === PUSH_MESSAGE) {
         if (message && message.action) {
           if (this.config.debug) {
             console.log(LOG_PUSH, message);
@@ -80,7 +81,6 @@ class SocketClient {
 
   /**
    * Create an request and send it to the API
-   * @param requestId - ID that will be used to identify this request
    * @param requestBody - request payload
    * @param timeout - time after request will be rejected
    */

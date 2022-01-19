@@ -7,6 +7,7 @@ export const READY = "ready";
 export const CONNECT = "connect";
 export const DISCONNECT = "disconnect";
 export const MESSAGE = "message";
+export const PUSH_MESSAGE = "push";
 
 // SOCKET LOGS:
 export const LOG_RESPONSE = "Receive response: ";
