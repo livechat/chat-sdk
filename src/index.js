@@ -1,5 +1,5 @@
-import SocketClient from "./socket";
 import mitt from "@livechat/mitt";
+import SocketClient from "./socket";
 import { validateConfig } from "./utils";
 import {
   LOGIN,
@@ -10,12 +10,13 @@ import {
   AGENT_NOT_LOGGED_IN,
   ERROR_METHOD_FACTORY_INCORRECT_PARAMS,
   ERROR_SEND_MESSAGE_MISSING_CHAT_ID,
-  ERROR_SEND_MESSAGE_MISSING_MESSAGE
+  ERROR_SEND_MESSAGE_MISSING_MESSAGE,
+  defaultConfig
 } from "./constants";
 
 class SDK {
   constructor(config = {}) {
-    this.config = config;
+    this.config = Object.assign({}, defaultConfig, config);
 
     this.sdkEmitter = mitt();
     this.platformEmitter = mitt();
@@ -34,7 +35,7 @@ class SDK {
   _checkRtmConnection = () => this._AGENT_API_RTM.checkIsRTMReady();
 
   /**
-   * Checks if method is ready to call, otherwise its will be added to eventQueue.
+   * Checks if method is ready to call.
    * Returns enhanced function with promise functionality
    */
   _promisify = func =>
@@ -47,12 +48,25 @@ class SDK {
     });
 
   /**
-   * Login Agent to the system with access_token passed in init() method
+   * Returns proper token header value based on this._authConfig
+   */
+  _getToken = () => {
+    if (this._authConfig.personal_access_token) {
+      return `Basic ${this._authConfig.personal_access_token}`;
+    } else if (this._authConfig.access_token) {
+      return `Bearer ${this._authConfig.access_token}`;
+    }
+
+    return null;
+  };
+
+  /**
+   * Login Agent to the system with config passed in init() method
    */
   _login = () => {
     const requestBody = {
       action: LOGIN,
-      payload: { token: `Bearer ${this._authConfig.access_token}` }
+      payload: { token: this._getToken() }
     };
 
     return this.methodFactory(requestBody);
@@ -104,7 +118,7 @@ class SDK {
   /**
    * Method factory, allow to create custom API calls outside SDK class
    * @param {object} requestBody - payload that will be send to RTM API
-   * @param {number} timeout - determiness how long promise will wait for response before rejection
+   * @param {number} timeout - determines how long promise will wait for response before rejection
    */
   methodFactory = (requestBody, timeout) =>
     this._promisify((resolve, reject) => {
