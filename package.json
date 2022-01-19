@@ -1,6 +1,6 @@
 {
   "name": "@livechat/chat-sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "SDK for connecting LiveChat as agent",
   "main": "dist/chat-sdk.js",
   "module": "dist/chat-sdk.esm.js",
@@ -10,7 +10,7 @@
     "dist"
   ],
   "contributors": [
-    "Sambor Górnicz <s.gornicz@livechatinc.com>"
+    "Sambor Górnicz <s.gornicz@livechat.com>"
   ],
   "keywords": [
     "livechat"
@@ -19,9 +19,7 @@
     "build": "rollup -c",
     "test": "jest",
     "prettier": "prettier --write src/**/*.js",
-    "eslint": "eslint src/**/*.js",
-    "install-example": "npm install --prefix example",
-    "start-example": "npm run start --prefix example"
+    "eslint": "eslint src/**/*.js"
   },
   "husky": {
     "hooks": {
