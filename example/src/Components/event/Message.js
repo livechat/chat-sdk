@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 const MessageWrapper = styled.div`
   position: relative;
@@ -24,8 +24,8 @@ const MessageText = styled.p`
 `;
 
 const Message = ({ message, user }) => {
-  const userName = (user && user.name) || "";
-  const isCustomer = user && user.type === "customer";
+  const userName = user?.name || "";
+  const isCustomer = user?.type === "customer";
 
   return (
     <MessageWrapper isCustomer={isCustomer}>

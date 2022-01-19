@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Button } from "@livechat/design-system";
-import styled from 'styled-components';
+import styled from '@emotion/styled';
+import { ChatContext } from "../../context/chat";
 
 const List = styled.div`
   padding: 0.5rem 2rem 1rem 1rem;
@@ -8,33 +9,44 @@ const List = styled.div`
   width: 220px;
   border-right: 1px solid ${({ theme }) => theme.secondary};
   overflow-y: auto;
+
+  > button {
+    margin-bottom: 0.7rem;
+  }
 `;
 
-const ChatList = ({ chatList, activeChatId, pickChat }) => (
-  <List>
-    {chatList &&
-      !!chatList.length &&
-      chatList.map(chatItem => {
-        const chatId = chatItem.id
-        const threadId = chatItem.thread && chatItem.thread.id;
-        const isActive = activeChatId === threadId || activeChatId === chatId;
-        const customerName = chatItem.users[0].name;
-        const handleClick = () => pickChat(chatItem);
+const ChatList = () => {
+  const { chatList, fetchMessages, activeChat } = useContext(ChatContext)
+
+  const getThreadId = (chat) => {
+    if (chat?.last_thread_summary) {
+      return `${chat.last_thread_summary.id}`
+    }
+
+    return `${chat?.thread.id}`
+  }
+
+  return (
+    <List>
+      {chatList?.map((chatItem) => {
+        const chatId = getThreadId(chatItem)
+        const isActive = chatId === getThreadId(activeChat)
+        const buttonType = isActive ? 'primary' : 'secondary'
+        const customer = chatItem.users.find(({ type }) => type === 'customer')
 
         return (
           <Button
-            key={threadId+chatId}
-            onClick={handleClick}
-            style={{ marginBottom: 10 }}
-            primary={isActive}
-            secondary={!isActive}
+            key={chatId}
+            onClick={() => fetchMessages(chatItem)}
+            kind={buttonType}
             fullWidth
           >
-            {customerName}
+            {customer?.name || 'customer'}
           </Button>
         );
       })}
-  </List>
-);
+    </List>
+  )
+};
 
 export default ChatList;

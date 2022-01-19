@@ -5,7 +5,12 @@ import './index.css';
 import App from './App';
 
 if (process.env.REACT_APP_CLIENT_ID) {
-    ReactDOM.render(<App />, document.getElementById('root'));
+  ReactDOM.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+    document.getElementById('root')
+  );
 } else {
-    throw new Error('Missing CLIENT_ID value');
+  throw new Error('Missing CLIENT_ID value');
 }

@@ -1,22 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Form, InputField } from "@livechat/design-system";
-import { ChatSDK } from "../../Logic";
+import { ChatContext } from '../../context/chat';
 
-const ChatForm = ({ chatId }) => {
+const ChatForm = () => {
+  const { sendMessage, activeChat } = useContext(ChatContext)
+
   const [inputValue, setInputValue] = useState("");
   const handleInputChange = ({ target }) => setInputValue(target.value);
 
-  const sendMessage = e => {
+  const sendChatMessage = e => {
     e.preventDefault();
-
-    ChatSDK.sendMessage(chatId, inputValue);
+    sendMessage(activeChat?.id, inputValue);
     setInputValue("");
   };
 
   return (
-    <Form onSubmit={sendMessage} style={{ width: "100%" }}>
+    <Form onSubmit={sendChatMessage} style={{ width: "100%" }}>
       <InputField
-        disabled={!chatId}
+        disabled={!activeChat}
         value={inputValue}
         id="chat-message"
         placeholder="Write message..."

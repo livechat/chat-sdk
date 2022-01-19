@@ -1,77 +1,51 @@
-import React, { useRef, useEffect } from "react";
-import styled from "styled-components";
-
-// COMPONENTS:
+import React, { useRef, useContext, useEffect } from "react";
+import styled from "@emotion/styled";
 import ChatForm from "./Form";
-import Message from "../Events/Message";
-import SystemMessage from "../Events/SystemMessage";
-import FilledForm from "../Events/FilledForm";
-import ChatInstruction from "./ChatInstruction";
+import Message from "./Message";
+import Instruction from "./Instruction";
+import { ChatContext } from '../../context/chat';
 
-// STYLED COMPONENTS:
 const Wrapper = styled.div`
   height: 98%;
   width: calc(100% - 220px);
   padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
 `;
 
 const MessageWrapper = styled.div`
-  height: ${({ onlyMessages }) => (onlyMessages ? "100%" : "89%")};
   overflow-y: auto;
-
-  & > .lc-card {
-    background: ${({ theme }) => theme.secondary};
-    display: inline-block;
-    margin-top: 0;
-    margin-bottom: 1rem;
-  }
+  flex-grow: 1;
 `;
 
-/**
- * Display chat messages
- */
-const ChatMessages = ({ chatInfo, chatMessages, onlyMessages = false }) => {
+const ChatMessages = ({ onlyMessages = false }) => {
   const ref = useRef();
 
-  const getChatUser = authorId => {
-    const chatUsers = chatInfo.users;
-    return chatUsers.find(({ id }) => id === authorId) || { type: "customer" };
-  };
+  const { messages, activeChat, chatList } = useContext(ChatContext)
+  const chatUsers = activeChat?.users || [];
 
   useEffect(() => {
-    ref.current.scrollTo(0, ref.current.scrollHeight);
-  }, [chatMessages]);
+    if (ref.current) {
+      // Scroll to the bottom of the chat with every new message
+      ref.current.scrollTo(0, ref.current.scrollHeight);
+    }
+  }, [messages]);
+
+  if (!chatList?.length) {
+    return (
+      <Wrapper>
+        <Instruction />
+      </Wrapper>
+    )
+  }
 
   return (
     <Wrapper>
       <MessageWrapper ref={ref} onlyMessages={onlyMessages}>
-        {chatMessages &&
-          chatMessages.map(message => {
-            const user = getChatUser(message.author_id);
-
-            switch (message.type) {
-              case "message":
-                return (
-                  <Message key={message.id} message={message} user={user} />
-                );
-
-              case "system_message":
-                return <SystemMessage key={message.id} message={message} />;
-
-              case "filled_form":
-                return <FilledForm key={message.id} message={message} />;
-
-              default:
-                return null;
-            }
-          })}
-
-        {chatInfo && chatMessages && !chatMessages.length && (
-          <ChatInstruction />
-        )}
+        {messages?.map(message => <Message key={message?.id} message={message} users={chatUsers} />)}
       </MessageWrapper>
 
-      {!onlyMessages && <ChatForm chatId={(chatInfo && chatInfo.id) || null} />}
+      {!onlyMessages && <ChatForm chatId={activeChat?.id} />}
     </Wrapper>
   );
 };
