@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import styled from "@emotion/styled";
-import Loader from "../components/Loader";
+import Loader from "../Components/Loader";
 import { ChatContext } from '../context/chat';
 
 const Wrapper = styled.div`
