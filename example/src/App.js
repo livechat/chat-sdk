@@ -4,8 +4,8 @@ import { theme } from "./constants";
 import ChatProvider from './context/chat'
 import NavigationProvider from './context/navigation'
 import AuthProvider from './context/auth'
-import Layout from "./components/Layout";
-import Router from "./components/Router";
+import Layout from "./Components/Layout";
+import Router from "./Components/Router";
 
 const App = () => (
   <ThemeProvider theme={theme}>

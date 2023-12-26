@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState } from 'react'
-import SignIn from '../components/SignIn'
+import SignIn from '../Components/SignIn'
 import { useAuth } from '../hooks/use-auth'
 import { ChatSDK } from '../utils/chat-sdk'
 
